@@ -1,0 +1,50 @@
+---
+- name: Set facts
+  include_tasks: set_facts.yml
+  tags: [always]
+
+- name: Install OpenVPN
+  include_tasks: install.yml
+  tags:
+    - install
+
+- name: Copy or Generate server keys
+  include_tasks: server_keys.yml
+  tags:
+    - server_keys
+
+- name: enable ipv4 forwarding
+  sysctl:
+    name: net.ipv4.ip_forward
+    value: 1
+  failed_when: false
+  when: not ci_build
+
+- name: enable ipv6 forwarding
+  sysctl:
+    name: net.ipv6.conf.all.forwarding
+    value: 1
+    ignoreerrors: yes
+  when: openvpn_server_ipv6_network is defined and not ci_build
+
+- name: Detect firewall type
+  include_tasks: iptables.yml
+  tags:
+    - firewall
+
+- name: Generate client configs
+  include_tasks: client_keys.yml
+  when: openvpn_clients is defined
+  tags:
+    - client_keys
+
+- name: Generate revocation list and clean up
+  include_tasks: revocation.yml
+  when: openvpn_revoke_these_certs is defined
+  tags:
+    - revocation
+
+- name: Configure OpenVPN server
+  include_tasks: config.yml
+  tags:
+    - configure
