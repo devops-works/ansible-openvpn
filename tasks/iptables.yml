@@ -18,6 +18,7 @@
 
 - name: iptables - Allow VPN forwarding
   iptables:
+    action: insert
     chain: FORWARD
     source: "{{openvpn_server_network}}/24"
     jump: ACCEPT
@@ -26,6 +27,7 @@
 
 - name: iptables - Allow incoming VPN connection
   iptables:
+    action: insert
     chain: INPUT
     protocol: "{{openvpn_proto}}"
     destination_port: "{{openvpn_port}}"
@@ -35,6 +37,7 @@
 
 - name: iptables - Accept packets from VPN tunnel adaptor
   iptables:
+    action: insert
     chain: INPUT
     in_interface: tun0
     jump: ACCEPT
@@ -43,6 +46,7 @@
 
 - name: iptables - Perform NAT readdressing
   iptables:
+    action: insert
     table: nat
     chain: POSTROUTING
     source: "{{openvpn_server_network}}/24"
@@ -53,6 +57,7 @@
 
 - name: iptables - Perform NAT readdressing with MASQUERADE
   iptables:
+    action: insert
     table: nat
     chain: POSTROUTING
     source: "{{openvpn_server_network}}/24"
